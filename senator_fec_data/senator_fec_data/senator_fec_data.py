@@ -6,6 +6,29 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from xml.etree.ElementTree import parse
 
+def get_api_key(api_key):
+    """
+    Returns a key for convenient use in package functions.
+    
+    Parameters:
+    ------------
+    api_key: str.
+    The name of an FEC API key saved in the user's operating system.
+    
+    Output:
+    ------------
+    key: str.
+    A variable "key" that can be saved for future use.
+    
+    Example:
+    ------------
+    >> key = get_api_key("FEC_API_KEY")
+    >> print(type(key))
+    <class 'str'>
+    """
+    key = os.getenv(api_key)
+    return key
+
 def get_senator_list():
     """
     Returns a pandas DataFrame of current U.S. Senators.
@@ -69,16 +92,17 @@ def get_senator(state):
     else:
         return senators
     
-def get_senator_id(senator):
+def get_senator_id(senator, key):
     """
-    Returns the FEC campaign ID from the senator's Senate campaigns.
+    Returns the FEC campaign ID from the senator's Senate campaigns. This ID will be the same for every time he or she
+    runs for the Senate, but will not include House or Presidency campaigns.
     
     Parameters:
     ------------
     senator: str.
     The full name of a sitting U.S. senator. The use of a nickname will result in error.
     key: str.
-    The user's FEC API key, stored in the user's environment.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -90,7 +114,6 @@ def get_senator_id(senator):
     >> get_senator_id("Elizabeth Warren")
     'S2MA00170'
     """
-    key = os.getenv("FEC_API_KEY")
     assert isinstance(senator, str), "This function only works with senator names as strings."
     try:
         candidate_call = "https://api.open.fec.gov/v1/names/candidates/?api_key=" + key + "&q=" + senator
@@ -103,14 +126,17 @@ def get_senator_id(senator):
     except (KeyError):
         print("This senator could not be found. Please try the name of a current U.S. senator.")
         
-def get_state_ids(state):
+def get_state_ids(state, key):
     """
-    Returns the FEC campaign ID from both state senators. 
+    Returns the FEC campaign ID from both state senators. This ID will be the same for every time the candidate 
+    runs for the Senate, but will not include House or Presidency campaigns.
     
     Parameters:
     ------------
     state: str.
     The abbreviation of one of 50 U.S. states.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -126,11 +152,12 @@ def get_state_ids(state):
     assert isinstance(state, str), "This function only works with state names as strings."
     try:
         for senator in get_senator(state):
-            print(get_senator_id(senator))
+            print(get_senator_id(senator, key))
     except TypeError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
+
         
-def get_fec_totals_senator(senator):
+def get_fec_totals_senator(senator, key):
     """
     Returns a pandas DataFrame to the user with the specified U.S. senator's full FEC filings.
     
@@ -138,6 +165,8 @@ def get_fec_totals_senator(senator):
     ------------
     senator: str.
     The full name of a sitting U.S. senator.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -151,7 +180,7 @@ def get_fec_totals_senator(senator):
     assert isinstance(senator, str), "This function only works with senator names as strings."
     key = os.getenv("FEC_API_KEY")
     try:
-        senator_id = get_senator_id(senator)
+        senator_id = get_senator_id(senator, key)
         schedule_e_call = "https://api.open.fec.gov/v1/candidate/" + senator_id + "/totals/?api_key=" + key  
         call_expenditures = requests.get(schedule_e_call)
     
@@ -166,7 +195,7 @@ def get_fec_totals_senator(senator):
         
  
 
-def get_fec_totals_state(state):
+def get_fec_totals_state(state, key):
     """
     Returns a pandas DataFrame to the user with the specified U.S. senator's full FEC filings.
     
@@ -174,6 +203,8 @@ def get_fec_totals_state(state):
     ------------
     state: str.
     An abbreviation of one of the 50 U.S. states.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -188,13 +219,13 @@ def get_fec_totals_state(state):
     assert isinstance(state, str), "This function only works with state names as strings."
     try:
         for senator in get_senator(state):
-            get_fec_totals_senator(senator)
+            get_fec_totals_senator(senator, key)
     except TypeError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
 
-def lifetime_contributions_senator(senator):
+def lifetime_contributions_senator(senator, key):
     """
     Returns the lifetime FEC unitemized contributions for the specified senator.
     
@@ -202,6 +233,8 @@ def lifetime_contributions_senator(senator):
     ------------
     senator: str.
     The full name of a sitting U.S. senator.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -216,7 +249,7 @@ def lifetime_contributions_senator(senator):
     key = os.getenv("FEC_API_KEY")
     assert isinstance(senator, str), "This function only works with senator names as strings."
     try:
-        senate_candidate_id = get_senator_id(senator)
+        senate_candidate_id = get_senator_id(senator, key)
         schedule_e_call = "https://api.open.fec.gov/v1/candidate/" + senate_candidate_id + "/totals/?api_key=" + key  
         call_expenditures = requests.get(schedule_e_call)
     
@@ -230,7 +263,7 @@ def lifetime_contributions_senator(senator):
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
-def lifetime_contributions_state(state):
+def lifetime_contributions_state(state, key):
     """
     Returns the lifetime FEC unitemized contributions for both state senators.
     
@@ -238,6 +271,8 @@ def lifetime_contributions_state(state):
     ------------
     state: str.
     An abbreviation of one of 50 U.S. states.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -253,13 +288,13 @@ def lifetime_contributions_state(state):
     assert isinstance(state, str), "This function only works with state names as strings."
     try:
         for senator in get_senator(state):
-            lifetime_contributions_senator(senator)
+            lifetime_contributions_senator(senator, key)
     except TypeError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
         
-def lifetime_expenditures_senator(senator):
+def lifetime_expenditures_senator(senator, key):
     """
     Returns the lifetime FEC expenditures for the specified senator.
     
@@ -267,6 +302,8 @@ def lifetime_expenditures_senator(senator):
     ------------
     senator: str.
     The full name of a sitting U.S. senator.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -281,7 +318,7 @@ def lifetime_expenditures_senator(senator):
     key = os.getenv("FEC_API_KEY")
     assert isinstance(senator, str), "This function only works with senator names as strings."
     try:
-        senate_candidate_id = get_senator_id(senator)
+        senate_candidate_id = get_senator_id(senator, key)
     
         schedule_e_call = "https://api.open.fec.gov/v1/candidate/" + senate_candidate_id + "/totals/?api_key=" + key  
         call_expenditures = requests.get(schedule_e_call)
@@ -294,10 +331,12 @@ def lifetime_expenditures_senator(senator):
         print(f'{senator} has spent a total of ${lifetime_contributions} through his or her campaigns for the Senate.')
     except NameError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
+    except NameError as e:
+        print(f"An error has occurred: {e}. Please check your inputs.")
         
         
         
-def lifetime_expenditures_state(state):
+def lifetime_expenditures_state(state, key):
     """
     Returns the lifetime FEC expenditures for both state senators.
     
@@ -305,6 +344,8 @@ def lifetime_expenditures_state(state):
     ------------
     state: str.
     An abbreviation of one of 50 U.S. states.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -320,12 +361,12 @@ def lifetime_expenditures_state(state):
     assert isinstance(state, str), "This function only works with state names as strings."
     try:
         for senator in get_senator(state):
-            lifetime_expenditures_senator(senator)
+            lifetime_expenditures_senator(senator, key)
     except TypeError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
-def get_fec_expenditures_senator(senator):
+def get_fec_expenditures_senator(senator, key):
     """
     Produces a plot of FEC expenditures by year.
     
@@ -333,6 +374,8 @@ def get_fec_expenditures_senator(senator):
     ------------
     senator: str.
     The full name of a sitting U.S. senator.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -347,7 +390,7 @@ def get_fec_expenditures_senator(senator):
     key = os.getenv("FEC_API_KEY")
     assert isinstance(senator, str), "This function only works with senator names as strings."
     try:
-        senate_candidate_id = get_senator_id(senator)
+        senate_candidate_id = get_senator_id(senator, key)
         schedule_e_call = "https://api.open.fec.gov/v1/candidate/" + senate_candidate_id + "/totals/?api_key=" + key  
         call_expenditures = requests.get(schedule_e_call)
     
@@ -364,7 +407,7 @@ def get_fec_expenditures_senator(senator):
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
-def get_fec_expenditures_state(state):
+def get_fec_expenditures_state(state, key):
     """
     Produces plots of FEC expenditures by year.
     
@@ -372,6 +415,8 @@ def get_fec_expenditures_state(state):
     ------------
     state: str.
     The abbreviated name of one of 50 U.S. states.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -386,12 +431,12 @@ def get_fec_expenditures_state(state):
     assert isinstance(state, str), "This function only works with state names as strings."
     try:
         for senator in get_senator(state):
-            get_fec_expenditures_senator(senator)
+            get_fec_expenditures_senator(senator, key)
     except TypeError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
-def get_fec_contributions_senator(senator):
+def get_fec_contributions_senator(senator, key):
     """
     Produces a plot of FEC unitemized contributions by year.
     
@@ -399,6 +444,8 @@ def get_fec_contributions_senator(senator):
     ------------
     senator: str.
     The name of a sitting U.S. senator.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -413,7 +460,7 @@ def get_fec_contributions_senator(senator):
     key = os.getenv("FEC_API_KEY")
     assert isinstance(senator, str), "This function only works with senator names as strings."
     try:
-        senate_candidate_id = get_senator_id(senator)
+        senate_candidate_id = get_senator_id(senator, key)
         schedule_e_call = "https://api.open.fec.gov/v1/candidate/" + senate_candidate_id + "/totals/?api_key=" + key  
         call_expenditures = requests.get(schedule_e_call)
     
@@ -430,7 +477,7 @@ def get_fec_contributions_senator(senator):
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
-def get_fec_contributions_state(state):
+def get_fec_contributions_state(state, key):
     """
     Produces plots of FEC unitemized contributions by year.
     
@@ -438,6 +485,8 @@ def get_fec_contributions_state(state):
     ------------
     state: str.
     The abbreviated name of one of 50 U.S. states.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -453,13 +502,13 @@ def get_fec_contributions_state(state):
     assert isinstance(state, str), "This function only works with state names as strings."
     try:
         for senator in get_senator(state):
-            get_fec_contributions_senator(senator)
+            get_fec_contributions_senator(senator, key)
     except TypeError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
         
         
         
-def full_report_senator(senator):
+def full_report_senator(senator, key):
     """
     Produces a full report and visualizations of the U.S. senator's FEC data.
     
@@ -467,6 +516,8 @@ def full_report_senator(senator):
     ------------
     senator: str.
     The full name of a sitting U.S. senator.
+    key: str.
+    The user's FEC API key, saved from the function get_api_key().
     
     Output:
     ------------
@@ -489,13 +540,10 @@ def full_report_senator(senator):
     try:
         print(f"Report on {senator}:")
         print("---------------------------")
-        lifetime_contributions_senator(senator)
-        lifetime_expenditures_senator(senator)
+        lifetime_contributions_senator(senator, key)
+        lifetime_expenditures_senator(senator, key)
     
-        get_fec_expenditures_senator(senator)
-        get_fec_contributions_senator(senator)
+        get_fec_expenditures_senator(senator, key)
+        get_fec_contributions_senator(senator, key)
     except IndexError as e:
         print(f"An error has occurred: {e}. Please check your inputs.")
-
-        
-        
