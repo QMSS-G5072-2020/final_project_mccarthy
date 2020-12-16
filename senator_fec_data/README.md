@@ -12,15 +12,21 @@ $ pip install -i https://test.pypi.org/simple/ senator_fec_data
 
 ## Features
 
-- TODO
+This package returns data on U.S. Senators from the FEC API (https://api.open.fec.gov/developers/). Users can obtain a dataset of the current senators and receive the FEC candidate ID associated with those senators. Users are able to search facts about senator FEC filings, visualize their FEC results, and even produce a full report on their senators.
 
 ## Dependencies
 
-- TODO
+- bs4
+- os
+- requests
+- json
+- pandas as pd
+- matplotlib.pyplot
+- xml.etree.ElementTree
 
 ## Usage
 
-- TODO
+Find more information about this package and its use at `./senator_fec_data/Extended_Tutorial`. 
 
 ## Documentation
 
