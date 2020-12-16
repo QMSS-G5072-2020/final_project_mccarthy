@@ -1,0 +1,7 @@
+README.rst
+setup.py
+src/mccarthy_final/__init__.py
+src/mccarthy_final.egg-info/PKG-INFO
+src/mccarthy_final.egg-info/SOURCES.txt
+src/mccarthy_final.egg-info/dependency_links.txt
+src/mccarthy_final.egg-info/top_level.txt
